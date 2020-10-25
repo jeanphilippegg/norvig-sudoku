@@ -4,14 +4,8 @@
      append (loop for cB across sB
                collect (concatenate 'string (string cA) (string cB)))))
 
-(defun unitlist-of-square (unitlist square)
-  (remove-if-not (lambda (x) (member square x :test #'string=)) unitlist))
-
 (defun get-peers (units square)
-  (remove square
-          (remove-duplicates (loop for unit in units append unit)
-                             :test #'string=)
-          :test #'string=))
+  (loop for peer in (apply #'append units) when (not (string= peer square)) collect peer))
 
 
 (defvar *digits* "123456789")
@@ -20,14 +14,18 @@
 (defvar *squares* (string-cartesian-product *rows* *cols*))
 (defvar *unitlist*
   (append (loop for c across *cols*
-             collect (string-cartesian-product *rows* (string c)))
+                collect (string-cartesian-product *rows* (string c)))
           (loop for r across *rows*
-             collect (string-cartesian-product (string r) *cols*))
+                collect (string-cartesian-product (string r) *cols*))
           (loop for r in '("ABC" "DEF" "GHI")
-             append (loop for c in '("123" "456" "789")
-                       collect (string-cartesian-product r c)))))
+                append (loop for c in '("123" "456" "789")
+                             collect (string-cartesian-product r c)))))
+
+(defun unitlist-of-square (square)
+  (loop for unit in *unitlist* when (member square unit :test #'string=) collect unit))
+
 (defvar *units*
-  (mapcar (lambda (x) (cons x (unitlist-of-square *unitlist* x))) *squares*))
+  (mapcar (lambda (x) (cons x (unitlist-of-square x))) *squares*))
 (defvar *peers*
   (mapcar (lambda (x) (cons (car x) (get-peers (cdr x) (car x)))) *units*))
 
@@ -123,15 +121,9 @@
   "Find the square with the fewest possibilities and try them all."
   (cond ((not values) nil)
         ((every (lambda (x) (= 1 (length (cdr x)))) values) values)
-        (t
-         (let ((min-square (reduce (lambda (x y) (if (< (length (cdr x)) (length (cdr y))) x y))
-                                   (remove-if-not (lambda (x) (> (length (cdr x)) 1))
-                                                  values))))
-           (some-in-seq (map 'list (lambda (d) (search-solution (assign (copy-alist values)
-                                                                        (car min-square)
-                                                                        d)))
-                             (cdr min-square)))))))
-
-(defun some-in-seq (seq)
-  "Return the first true element in seq."
-  (some #'identity seq))
+        (t (let ((min-square (reduce (lambda (x y) (if (< (length (cdr x)) (length (cdr y))) x y))
+                                     (remove-if-not (lambda (x) (> (length (cdr x)) 1)) values))))
+             (some #'identity (map 'list (lambda (d) (search-solution (assign (copy-alist values)
+                                                                              (car min-square)
+                                                                              d)))
+                                   (cdr min-square)))))))
