@@ -1,9 +1,7 @@
 Sudoku Solver in Lisp
 =====================
 
-This is an implementation in Common Lisp of the sudoku solver described in [Norvig's essay](http://norvig.com/sudoku.html).
-
-I tried translating Norvig's Python code in Lisp as closely as possible. Instead of dictionaries, I used alists to represent the map between a square and its possible values (and to represent all other maps).
+This is an implementation in Common Lisp of the sudoku solver described in [Norvig's essay](http://norvig.com/sudoku.html). I translated Norvig's Python code in Lisp as closely as possible.
 
 Usage
 -----
